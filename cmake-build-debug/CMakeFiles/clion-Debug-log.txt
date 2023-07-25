@@ -1,4 +1,0 @@
-"/Users/sajad/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8109.222/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/Users/sajad/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8109.222/CLion.app/Contents/bin/ninja/mac/ninja" -G Ninja -S "/Users/sajad/Documents/Learning/School/Summer 2023/COMP 2401/3 - Assignments/A04/A04_Code/pokemon-serverClient" -B "/Users/sajad/Documents/Learning/School/Summer 2023/COMP 2401/3 - Assignments/A04/A04_Code/pokemon-serverClient/cmake-build-debug"
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/sajad/Documents/Learning/School/Summer 2023/COMP 2401/3 - Assignments/A04/A04_Code/pokemon-serverClient/cmake-build-debug
