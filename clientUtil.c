@@ -26,9 +26,11 @@ void closeFile(FILE *file) {
  returns a FILE pointer to the opened file
  */
 FILE *openPokemonFile() {
-  char inFileName[100];
-  printf("Please enter the name of pokemon file: ");
-  scanf("%s", inFileName);
+//  char inFileName[100];
+//  printf("Please enter the name of pokemon file: ");
+//  scanf("%s", inFileName);
+
+  char *inFileName = "pokemon.csv";
 
   FILE *inFile = fopen(inFileName, "r");
   while (!inFile) {

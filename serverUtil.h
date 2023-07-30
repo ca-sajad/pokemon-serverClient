@@ -1,28 +1,26 @@
 /*
  ===============================================================================================================
-Name        : queryType.h
+Name        : fileUtil.h
 Author      : Seyedsajad Hosseini
 Version     : 1.0
-Description : Defines a QueryType struct for saving query related data
+Description : Contains functions prototypes for fileUtil.c
+              Defines a FileType struct
 Assumption  : -
  ===============================================================================================================
  */
 
-
-#ifndef QUERYTYPE_H
-#define QUERYTYPE_H
+#ifndef CLTFILEUTIL_H
+#define CLTFILEUTIL_H
 
 #include <stdio.h>
 
 typedef struct {
-    int queryCount;
-    int queryLinesCount;
-    int savedFileCount;
-    char searchWord[20];
-    char **queryLines;
-    char **savedFilesNames;
-    FILE *inFile;
-    FILE *outFile;
-} QueryType;
+  FILE *filePtr;
+  char fileName[100];
+} FileType;
+
+void closeFile(FILE *);
+FILE *openPokemonFile();
+FileType openOutFile();
 
 #endif
