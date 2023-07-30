@@ -1,26 +1,20 @@
 /*
  ===============================================================================================================
-Name        : fileUtil.h
+Name        : serverUtil.h
 Author      : Seyedsajad Hosseini
 Version     : 1.0
-Description : Contains functions prototypes for fileUtil.c
-              Defines a FileType struct
+Description : Contains functions prototypes for serverUtil.c
 Assumption  : -
  ===============================================================================================================
  */
 
-#ifndef CLTFILEUTIL_H
-#define CLTFILEUTIL_H
+#ifndef SRVFILEUTIL_H
+#define SRVFILEUTIL_H
 
 #include <stdio.h>
 
-typedef struct {
-  FILE *filePtr;
-  char fileName[100];
-} FileType;
-
-void closeFile(FILE *);
+int setupServer();
 FILE *openPokemonFile();
-FileType openOutFile();
+char *searchPokemons(char *,  FILE *);
 
 #endif

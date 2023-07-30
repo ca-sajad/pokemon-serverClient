@@ -1,2 +1,11 @@
-pps: PPS.c fileUtil.c queryUtil.c
-	gcc -o pps PPS.c fileUtil.c queryUtil.c
+
+PPS = pps.c serverUtil.c
+PQC = pqc.c clientUtil.c
+
+program: pps pqc
+
+pps: $(PPS)
+	gcc -o pps $(PPS)
+
+pqc: $(PQC)
+	gcc -o pqc $(PQC)
