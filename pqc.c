@@ -15,12 +15,13 @@ Assumption  : Contains constants from constants.h
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/socket.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include "clientUtil.h"
 #include "constants.h"
 
+// Global variable
+pthread_mutex_t mutex;
 
 /**
  * Open the client socket, send queries, receive responses, and
@@ -37,10 +38,10 @@ int main() {
     // Declare variables
     char                searchWord[SEARCH_WORD_SIZE];
     char                option = 'd';
-    int                 clientSocket;
+    int                 clientSocket = -1;
     FileType            outFile;
-    pthread_t           thread1, thread2;
-    int                 threadResult1 = 1, threadResult2 = 1;
+    pthread_t           searchThread, saveThread;
+    int                 searchThreadResult = 1, saveThreadResult = 1;
     ThreadDataType      threadData;
     QueryType           queries;
 
@@ -53,7 +54,7 @@ int main() {
     queries.savedFileCount = 0;
 
     // Initialize mutexe
-    if (pthread_mutex_init(&mutex1, NULL) != 0) {
+    if (pthread_mutex_init(&mutex, NULL) != 0) {
         perror("pthread_mutex_init");
         exit(EXIT_FAILURE);
     }
@@ -79,13 +80,13 @@ int main() {
                     threadData.queries = &queries;
                 }
                 strcpy(threadData.searchWord, searchWord);
-
-                if (threadResult1 == 0)
-                    pthread_join(thread1, NULL);
+                // wait for the thread to finish its previous task
+                if (searchThreadResult == 0)
+                    pthread_join(searchThread, NULL);
 
                 // Create the thread for sending the search string to the server and saving result
-                threadResult1 = pthread_create(&thread1, NULL, thread1Function, &threadData);
-                if (threadResult1 != 0) {
+                searchThreadResult = pthread_create(&searchThread, NULL, searchThreadFunc, &threadData);
+                if (searchThreadResult != 0) {
                     printf("Error creating thread.\n");
                     exit(EXIT_FAILURE);
                 }
@@ -95,16 +96,17 @@ int main() {
             // Save the results of previous queries
             case 'b':
                 if (queries.queryLinesCount > 0) {
-                    if (threadResult2 == 0)
-                        pthread_join(thread2, NULL);
+                    // wait for the thread to finish its previous task
+                    if (saveThreadResult == 0)
+                        pthread_join(saveThread, NULL);
 
                     // Open a file to write data
-                    outFile = openOutFile();
+                    outFile = openFileToWrite();
                     queries.outFile = &outFile;
 
                     // Create the thread for sending the search string to the server and saving result
-                    threadResult2 = pthread_create(&thread2, NULL, thread2Function, &queries);
-                    if (threadResult2 != 0) {
+                    saveThreadResult = pthread_create(&saveThread, NULL, saveThreadFunc, &queries);
+                    if (saveThreadResult != 0) {
                         printf("Error creating thread.\n");
                         exit(EXIT_FAILURE);
                     }
@@ -115,18 +117,22 @@ int main() {
 
             // Disconnect from server and exit the program
             case 'c':
-                // Wait for threads to finish their tasks
-                if (threadResult1 == 0)
-                    pthread_join(thread1, NULL);
-                if (threadResult2 == 0)
-                    pthread_join(thread2, NULL);
                 // Disconnect from server
-                send(clientSocket, DISCONNECT, strlen(DISCONNECT), 0);
-                close(clientSocket);
-                // printing a summary of queries and saved files
+                if (clientSocket > 0) {
+                    strcpy(threadData.searchWord, DISCONNECT);
+                    if (searchThreadResult == 0)
+                        pthread_join(searchThread, NULL);
+                    pthread_create(&searchThread, NULL, searchThreadFunc, &threadData);
+                    pthread_join(searchThread, NULL);
+                    close(clientSocket);
+                }
+                // Wait for save thread to finish its task
+                if (saveThreadResult == 0)
+                    pthread_join(saveThread, NULL);
+                // Print a summary of queries and saved file names
                 printf("Number of successful queries: %d\n", queries.queryCount);
                 printFileNames(queries);
-                // cleaning up
+                // Clean up allocated memory
                 freeMemory(&queries);
                 break;
         }

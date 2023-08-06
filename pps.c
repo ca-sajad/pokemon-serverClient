@@ -18,7 +18,7 @@ Assumption  : Contains constants from constants.h
 
 
 /**
- * Start the server, listens to clients, and responds.
+ * Start the server, listen to clients, and respond.
  *
  * This function creates a server socket based on TCP protocol,
  * waits for clients to connect, and responds to their query.
@@ -39,7 +39,7 @@ int main(){
     if (serverSocket < 0)
         exit(EXIT_FAILURE);
 
-    // Open pokemon file to search queries
+    // Open Pokemon file to search queries
     FILE *inFile = openPokemonFile();
     if (!inFile)
         exit(EXIT_FAILURE);
@@ -53,25 +53,32 @@ int main(){
             exit(EXIT_FAILURE);
         }
 
-        // Go into infinite loop to talk to client
+        // Go to an into infinite loop to talk to client
         while (1) {
             // Get the message from the client
             bytesRcv = recv(clientSocket, searchWord, sizeof(searchWord), 0);
-            searchWord[bytesRcv] = '\0';
 
-            // Disconnect gracefully if the client sends "disconnect"
-            if (strcmp(searchWord, DISCONNECT) == 0)
-                break;
-
-            // Search pokemon file to find query lines
-            response = searchPokemons(searchWord, inFile);
-            // Send the query lines to the client
-            if (response)
-                send(clientSocket, response, strlen(response), 0);
-            // Send a special message if no pokemon is found
-            else
+            if (bytesRcv == -1)
                 send(clientSocket, NOT_FOUND, strlen(NOT_FOUND), 0);
+            else {
+                searchWord[bytesRcv] = '\0';
+
+                // Disconnect gracefully if the client sends "disconnect"
+                if (strcmp(searchWord, DISCONNECT) == 0) {
+                    break;
+                }
+
+                // Search Pokemon file to find query lines
+                response = searchPokemons(searchWord, inFile);
+                // Send the query lines to the client
+                if (response)
+                    send(clientSocket, response, strlen(response), 0);
+                    // Send a special message if no Pokemon is found
+                else
+                    send(clientSocket, NOT_FOUND, strlen(NOT_FOUND), 0);
+            }
         }
+
     }
 
 }

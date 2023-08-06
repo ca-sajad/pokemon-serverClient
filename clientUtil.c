@@ -57,7 +57,7 @@ void closeFile(FILE *file) {
  *
  * @returns a FILEType struct containing a FILE pointer to the opened file
  */
-FileType openOutFile() {
+FileType openFileToWrite() {
     FileType    outFile;
     FILE        *filePtr;
     char        fileName[FILE_NAME_SIZE];
@@ -65,13 +65,13 @@ FileType openOutFile() {
     // Prompt the user for file name
     printf("Please enter a file name for saving queries: ");
     scanf("%s", fileName);
-    filePtr = fopen(fileName, "a");
+    filePtr = fopen(fileName, "w");
 
     // Get file name from the user until it is valid
     while (!filePtr) {
         printf("Unable to create the new file. Please enter the name of the file again.\n");
         scanf("%s", fileName);
-        filePtr = fopen(fileName, "a");
+        filePtr = fopen(fileName, "w");
     }
 
     outFile.filePtr = filePtr;
@@ -136,7 +136,7 @@ void freeMemory(QueryType *queries) {
 int writeQueriesToFile(QueryType *queries) {
 
     // lock mutex
-    if (pthread_mutex_lock(&mutex1) != 0) {
+    if (pthread_mutex_lock(&mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
@@ -150,7 +150,7 @@ int writeQueriesToFile(QueryType *queries) {
     closeFile(queries->outFile->filePtr);
 
     // unlock mutex
-    if (pthread_mutex_unlock(&mutex1) != 0) {
+    if (pthread_mutex_unlock(&mutex) != 0) {
         perror("pthread_mutex_unlock");
         exit(EXIT_FAILURE);
     }
@@ -202,7 +202,7 @@ int connectToServer(){
     // Create socket
     clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (clientSocket < 0) {
-        printf("CLIENT ERROR: Could not open socket.\n");
+        printf("Unable to establish connection to the PPS!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -215,7 +215,7 @@ int connectToServer(){
     // Connect to server
     status = connect(clientSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
     if (status < 0) {
-        printf("CLIENT ERROR: Could not connect.\n");
+        printf("Unable to establish connection to the PPS!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -265,7 +265,7 @@ void saveQueryResponse(QueryType *queries, int clientSocket){
 
 
 /**
- * Thread 1 function to send query and save server response using saveQueryResponse()
+ * Search thread function to send query and save server response using saveQueryResponse()
  *
  * This function receives a ThreadDataType variable and sends its searchWord
  * to the server. Then, puts the saveQueryResponse() function in a mutex
@@ -275,15 +275,19 @@ void saveQueryResponse(QueryType *queries, int clientSocket){
  * @param   p a pointer to a ThreadDataType variable
  * @returns an integer to show function success
  */
-void *thread1Function(void *p){
+void *searchThreadFunc(void *p){
 
     ThreadDataType *threadData = (ThreadDataType *) p;
 
     // Send search string to server
     send(threadData->clientSocket, threadData->searchWord, strlen(threadData->searchWord), 0);
 
+    // Do not wait for response when disconnecting
+    if (strcmp(threadData->searchWord, DISCONNECT) == 0)
+        return 0;
+
     // lock mutex
-    if (pthread_mutex_lock(&mutex1) != 0) {
+    if (pthread_mutex_lock(&mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
@@ -292,7 +296,7 @@ void *thread1Function(void *p){
     saveQueryResponse(threadData->queries, threadData->clientSocket);
 
     // lock mutex
-    if (pthread_mutex_unlock(&mutex1) != 0) {
+    if (pthread_mutex_unlock(&mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
@@ -302,7 +306,7 @@ void *thread1Function(void *p){
 
 
 /**
- * Thread 2 function to write queries to file and save file name using
+ * Save thread function to write queries to file and save file name using
  * writeQueriesToFile() and saveFileName() functions
  *
  * This function receives a QueryType variable and calls writeQueriesToFile()
@@ -311,13 +315,13 @@ void *thread1Function(void *p){
  * @param   p a pointer to a QueryType variable
  * @returns an integer to show function success
  */
-void *thread2Function(void *p) {
+void *saveThreadFunc(void *p) {
 
     QueryType           *queries;
 
     queries = (QueryType *) p;
 
-    // Write pokemon records to file
+    // Write Pokemon records to file
     writeQueriesToFile(queries);
     // Save file name
     saveFileName(queries, queries->outFile->fileName);

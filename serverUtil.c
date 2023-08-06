@@ -128,7 +128,7 @@ char *searchPokemons(char *searchWord,  FILE *file) {
 
     while (getline(&line, &lineSize, file) != -1) { // read one line
 
-        // copy the line to a new variable, because line is modified using strtok()
+        // copy the line to a new variable, as the line is modified using strtok()
         lineCopy = malloc(strlen(line) + 1);
         strcpy(lineCopy, line);
 

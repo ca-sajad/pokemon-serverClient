@@ -17,8 +17,8 @@ Assumption  : Contains constants from constants.h
 #include <pthread.h>
 #include "constants.h"
 
-// Global variables
-pthread_mutex_t mutex1;
+// Global variable
+extern pthread_mutex_t mutex;
 
 // Define structures
 typedef struct {
@@ -44,14 +44,14 @@ typedef struct {
 // Function Prototypes
 void printMenu();
 void closeFile(FILE *);
-FileType openOutFile();
+FileType openFileToWrite();
 int writeQueriesToFile(QueryType *queries);
 void freeMemory(QueryType *);
 void saveFileName(QueryType *, char *);
 void printFileNames(QueryType);
 int connectToServer();
 void saveQueryResponse(QueryType *queries, int clientSocket);
-void *thread1Function(void *);
-void *thread2Function(void *);
+void *searchThreadFunc(void *);
+void *saveThreadFunc(void *);
 
 #endif

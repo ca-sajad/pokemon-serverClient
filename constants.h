@@ -11,9 +11,6 @@ Assumption  : -
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define xstr(s) str(s)
-#define str(s) #s
-
 #define SEARCH_WORD_SIZE        20
 #define FILE_NAME_SIZE          200
 
