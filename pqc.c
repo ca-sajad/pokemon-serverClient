@@ -20,9 +20,6 @@ Assumption  : Contains constants from constants.h
 #include "clientUtil.h"
 #include "constants.h"
 
-// Global variable
-pthread_mutex_t mutex;
-
 /**
  * Open the client socket, send queries, receive responses, and
  * save data to file
@@ -54,7 +51,7 @@ int main() {
     queries.savedFileCount = 0;
 
     // Initialize mutexe
-    if (pthread_mutex_init(&mutex, NULL) != 0) {
+    if (pthread_mutex_init(&queries.mutex, NULL) != 0) {
         perror("pthread_mutex_init");
         exit(EXIT_FAILURE);
     }
@@ -116,7 +113,7 @@ int main() {
                 break;
 
             // Disconnect from server and exit the program
-            case 'c':
+            case 'd':
                 // Disconnect from server
                 if (clientSocket > 0) {
                     strcpy(threadData.searchWord, DISCONNECT);

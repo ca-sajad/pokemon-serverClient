@@ -136,7 +136,7 @@ void freeMemory(QueryType *queries) {
 int writeQueriesToFile(QueryType *queries) {
 
     // lock mutex
-    if (pthread_mutex_lock(&mutex) != 0) {
+    if (pthread_mutex_lock(&queries->mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
@@ -150,7 +150,7 @@ int writeQueriesToFile(QueryType *queries) {
     closeFile(queries->outFile->filePtr);
 
     // unlock mutex
-    if (pthread_mutex_unlock(&mutex) != 0) {
+    if (pthread_mutex_unlock(&queries->mutex) != 0) {
         perror("pthread_mutex_unlock");
         exit(EXIT_FAILURE);
     }
@@ -287,7 +287,7 @@ void *searchThreadFunc(void *p){
         return 0;
 
     // lock mutex
-    if (pthread_mutex_lock(&mutex) != 0) {
+    if (pthread_mutex_lock(&threadData->queries->mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
@@ -296,7 +296,7 @@ void *searchThreadFunc(void *p){
     saveQueryResponse(threadData->queries, threadData->clientSocket);
 
     // lock mutex
-    if (pthread_mutex_unlock(&mutex) != 0) {
+    if (pthread_mutex_unlock(&threadData->queries->mutex) != 0) {
         perror("pthread_mutex_lock");
         exit(EXIT_FAILURE);
     }
